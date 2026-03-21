@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register New User Face - Attendance System</title>
+    <link rel="stylesheet" href="{% static 'css/register_user_face.css' %}">
+    <style>
+        * { box-sizing: border-box; }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, 
+                #1e1b4b 0%,
+                #312e81 15%,
+                #4c1d95 30%,
+                #5b21b6 45%,
+                #1e40af 60%,
+                #1e3a8a 75%,
+                #0c4a6e 90%,
+                #082f49 100%);
+            background-attachment: fixed;
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #f0e6ff;
+            min-height: 100vh;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(99, 102, 241, 0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div>
+                    <h1 class="header-title">📸 Register New User Face</h1>
+                    <p class="header-subtitle">Add a new person to the system with face recognition</p>
+                </div>
+                <div class="header-info">
+                    <p class="info-item">👤 <strong id="userName">User</strong></p>
+                    <a href="/" class="back-link">← Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="content-grid">
+                <!-- Registration Form Section -->
+                <section class="form-section">
+                    <div class="card form-card">
+                        <h2 class="card-title">📝 User Registration Details</h2>
+                        <form id="registerFaceForm" class="registration-form">
+                            <!-- Personal Information -->
+                            <div class="form-section-group">
+                                <h3 class="form-section-title">Personal Information</h3>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="fullName">Full Name:</label>
+                                        <input type="text" id="fullName" name="fullName" placeholder="Enter full name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="email">Email:</label>
+                                        <input type="email" id="email" name="email" placeholder="user@example.com" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="username">Username:</label>
+                                        <input type="text" id="username" name="username" placeholder="Choose a unique username" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="password">Password:</label>
+                                        <input type="password" id="password" name="password" placeholder="Enter a secure password" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="phone">Phone (Optional):</label>
+                                    <input type="tel" id="phone" name="phone" placeholder="Contact phone number">
+                                </div>
+                            </div>
+
+                            <!-- Face Capture Section -->
+                            <div class="form-section-group">
+                                <h3 class="form-section-title">📹 Face Capture</h3>
+                                
+                                <!-- Camera Preview -->
+                                <div class="camera-container">
+                                    <div id="cameraPreviewContainer" class="camera-preview" style="display: none;">
+                                        <video id="registerVideo" autoplay playsinline></video>
+                                        <div class="camera-overlay">
+                                            <div class="live-indicator">
+                                                <span class="live-dot"></span>
+                                                LIVE
+                                            </div>
+                                            <div class="capture-guide">Position your face in the frame</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Captured Image Preview -->
+                                    <div id="capturedImagePreview" class="captured-preview" style="display: none;">
+                                        <p class="success-message">✓ Face captured successfully!</p>
+                                        <img id="capturedImage" alt="Captured face">
+                                    </div>
+
+                                    <canvas id="registerCanvas" style="display: none;"></canvas>
+                                </div>
+
+                                <!-- Camera Controls -->
+                                <div class="camera-controls">
+                                    <button type="button" class="btn btn-camera" onclick="startRegisterCamera()" id="startCameraBtn">
+                                        📸 Start Camera
+                                    </button>
+                                    <button type="button" class="btn btn-camera btn-danger" onclick="stopRegisterCamera()" id="stopCameraBtn" style="display: none;">
+                                        ⏹️ Stop Camera
+                                    </button>
+                                    <button type="button" class="btn btn-camera btn-success" onclick="captureRegisterFace()" id="captureFaceBtn" style="display: none;">
+                                        📷 Capture Face
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-primary" id="registerSubmitBtn" disabled>
+                                    Register Face
+                                </button>
+                                <button type="reset" class="btn btn-secondary">
+                                    🔄 Clear
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Message Display -->
+                    <div id="registerMessage" class="message-container"></div>
+                </section>
+
+                <!-- Info Panel Section -->
+                <section class="info-section">
+                    <div class="card info-card">
+                        <h2 class="card-title">ℹ️ Registration Guide</h2>
+                        
+                        <div class="info-group">
+                            <h4 class="info-title">📋 Required Information</h4>
+                            <ul class="info-list">
+                                <li>Full Name - Your complete name</li>
+                                <li>Email - Valid email address</li>
+                                <li>Username - Unique identifier</li>
+                                <li>Password - Secure password</li>
+                                <li>Face Image - Clear facial photo</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-group">
+                            <h4 class="info-title">📸 Face Capture Tips</h4>
+                            <ul class="info-list">
+                                <li>Ensure good lighting</li>
+                                <li>Face should be clearly visible</li>
+                                <li>Remove sunglasses/hats</li>
+                                <li>Keep face straight to camera</li>
+                                <li>Avoid shadows on face</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-group">
+                            <h4 class="info-title">🔐 Password Tips</h4>
+                            <ul class="info-list">
+                                <li>At least 8 characters</li>
+                                <li>Mix uppercase and lowercase</li>
+                                <li>Include numbers and symbols</li>
+                                <li>Avoid common passwords</li>
+                                <li>Keep it confidential</li>
+                            </ul>
+                        </div>
+
+                        <div class="stats-box">
+                            <div class="stat-item">
+                                <span class="stat-icon">👥</span>
+                                <span class="stat-label">Total Users</span>
+                                <span class="stat-value" id="totalUsersInfo">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-icon">✓</span>
+                                <span class="stat-label">Registered Today</span>
+                                <span class="stat-value" id="registeredTodayInfo">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Recent Users Section -->
+            <section class="recent-section">
+                <h2 class="section-title">👥 Recently Registered Users</h2>
+                
+                <div class="card">
+                    <div id="recentUsersList" class="users-list">
+                        <p class="loading-text">Loading users...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Face Detection Attendance System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/register_user_face.js' %}"></script>
+</body>
+</html>

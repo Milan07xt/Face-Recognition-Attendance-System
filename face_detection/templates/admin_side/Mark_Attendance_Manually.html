@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance Manually - Attendance System</title>
+    <link rel="stylesheet" href="{% static 'css/mark_attendance_manually.css' %}">
+    <style>
+        * { box-sizing: border-box; }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, 
+                #1e1b4b 0%,
+                #312e81 15%,
+                #4c1d95 30%,
+                #5b21b6 45%,
+                #1e40af 60%,
+                #1e3a8a 75%,
+                #0c4a6e 90%,
+                #082f49 100%);
+            background-attachment: fixed;
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #f0e6ff;
+            min-height: 100vh;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(99, 102, 241, 0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div>
+                    <h1 class="header-title">📋 Mark Attendance Manually</h1>
+                    <p class="header-subtitle">Record attendance for users manually</p>
+                </div>
+                <div class="header-info">
+                    <p class="info-item">👤 <strong id="userName">User</strong></p>
+                    <a href="/" class="back-link">← Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <section class="section">
+                <h2 class="section-title">✓ Mark Attendance</h2>
+                
+                <!-- Attendance Form Card -->
+                <div class="card form-card">
+                    <h3 class="card-title">📝 Attendance Details</h3>
+                    <form id="attendanceForm" class="attendance-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="attendanceUser">Select User:</label>
+                                <select id="attendanceUser" required>
+                                    <option value="">-- Choose User --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="attendanceDate">Date:</label>
+                                <input type="date" id="attendanceDate" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="attendanceTime">Time In:</label>
+                                <input type="time" id="attendanceTime" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="attendanceStatus">Status:</label>
+                                <select id="attendanceStatus" required>
+                                    <option value="">-- Select Status --</option>
+                                    <option value="Present">✓ Present</option>
+                                    <option value="Absent">✗ Absent</option>
+                                    <option value="Late">⏰ Late</option>
+                                    <option value="Leave">🏥 Leave</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="attendanceNotes">Notes (Optional):</label>
+                            <textarea id="attendanceNotes" placeholder="Add any notes or remarks..." rows="4"></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">✓ Mark Attendance</button>
+                            <button type="reset" class="btn btn-secondary">🔄 Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Message Display -->
+                <div id="attendanceMessage" class="message-container"></div>
+            </section>
+
+            <!-- Recent Attendance Section -->
+            <section class="section">
+                <h2 class="section-title">📊 Recent Attendance Records</h2>
+                
+                <div class="card records-card">
+                    <div class="records-header">
+                        <input type="date" id="filterDate" class="filter-input">
+                        <button class="btn btn-filter" onclick="filterRecords()">🔍 Filter</button>
+                        <button class="btn btn-filter" onclick="loadRecentRecords()">🔄 Refresh</button>
+                    </div>
+                    <div id="recordsList" class="records-list">
+                        <p class="loading-text">Loading records...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Statistics Section -->
+            <section class="section">
+                <h2 class="section-title">📈 Attendance Statistics</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <p class="stat-label">Total Users</p>
+                            <p class="stat-value" id="totalUsers">0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">✓</div>
+                        <div class="stat-info">
+                            <p class="stat-label">Present Today</p>
+                            <p class="stat-value" id="presentToday">0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">✗</div>
+                        <div class="stat-info">
+                            <p class="stat-label">Absent Today</p>
+                            <p class="stat-value" id="absentToday">0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">⏰</div>
+                        <div class="stat-info">
+                            <p class="stat-label">Late Today</p>
+                            <p class="stat-value" id="lateToday">0</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Face Detection Attendance System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/mark_attendance_manually.js' %}"></script>
+</body>
+</html>

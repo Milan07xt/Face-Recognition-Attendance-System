@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance - Face Recognition</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        .attendance-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.9) 0%, rgba(45, 35, 97, 0.9) 100%);
+            border-radius: 20px;
+            border: 2px solid rgba(168, 85, 247, 0.3);
+        }
+        .camera-preview {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 20px auto;
+            border: 3px solid rgba(168, 85, 247, 0.5);
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+        }
+        .camera-preview video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .live-indicator {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .camera-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 15px;
+            text-align: center;
+            color: white;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            color: white;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(168, 85, 247, 0.3);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .message-box {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .message-success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 2px solid #10b981;
+            color: #10b981;
+        }
+        .message-error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid #ef4444;
+            color: #ef4444;
+        }
+        .message-info {
+            background: rgba(99, 102, 241, 0.2);
+            border: 2px solid #6366f1;
+            color: #a78bfa;
+        }
+        .attendance-info {
+            background: rgba(99, 102, 241, 0.1);
+            border: 2px solid rgba(168, 85, 247, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+        }
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            color: #c8b8ff;
+            font-weight: 600;
+        }
+        .info-value {
+            color: #f0abfc;
+            font-weight: 700;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .btn-small {
+            padding: 8px 14px;
+            font-size: 0.95rem;
+            border-radius: 6px;
+        }
+        .retry-row {
+            margin: 10px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .retry-hint {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+        }
+        .help-box {
+            margin-top: 10px;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: #fef2f2;
+            line-height: 1.5;
+        }
+        .help-box h4 {
+            margin: 0 0 6px 0;
+            color: #fecdd3;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .help-box ol {
+            margin: 0;
+            padding-left: 18px;
+            color: #ffe4e6;
+        }
+        .help-box li {
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ Face Recognition Attendance</h1>
+            <nav>
+                <ul>
+                    <li><a href="/" class="nav-link active">Mark Attendance</a></li>
+                    <li><a href="/register" class="nav-link">Register Face</a></li>
+                    <li><a href="/attendance_record" class="nav-link">View Records</a></li>
+                    <li><a href="/admin_dashboard" class="nav-link">Admin Dashboard</a></li>
+                    <li id="userNavItem"><a href="/login" class="nav-link">Login</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <div class="attendance-container">
+                <h2 style="text-align: center; color: #f0abfc; margin-bottom: 10px;">📸 Automated Face Recognition Attendance</h2>
+                <p style="text-align: center; color: #c8b8ff; margin-bottom: 20px;">Position your face in front of the camera to mark attendance automatically</p>
+                
+                <!-- System Feature -->
+                <div style="background: rgba(99, 102, 241, 0.15); border-left: 4px solid #6366f1; padding: 15px; border-radius: 8px; margin-bottom: 30px; text-align: center;">
+                    <p style="color: #f0abfc; font-weight: 700; margin: 0; font-size: 1.05rem;">
+                        ✨ The system will recognize your face and mark attendance automatically
+                    </p>
+                </div>
+
+                <!-- Camera Preview -->
+                <div id="cameraContainer" class="camera-preview hidden">
+                    <video id="video" autoplay playsinline></video>
+                    <div class="live-indicator">🔴 LIVE</div>
+                    <div class="camera-overlay">
+                        <span id="cameraStatus">Position your face in the frame</span>
+                    </div>
+                </div>
+                <canvas id="canvas" class="hidden"></canvas>
+
+                <!-- Controls -->
+                <div class="btn-group">
+                    <button id="startCameraBtn" class="btn btn-primary">📹 Start Camera</button>
+                    <button id="captureBtn" class="btn btn-success hidden">📸 Capture & Mark Attendance</button>
+                    <button id="stopCameraBtn" class="btn btn-danger hidden">⏹️ Stop Camera</button>
+                </div>
+
+                <!-- Message Display -->
+                <div id="messageBox" class="hidden"></div>
+
+                <!-- Camera error guidance -->
+                <div id="retryRow" class="retry-row hidden">
+                    <button id="retryCameraBtn" class="btn btn-primary btn-small">Retry Camera</button>
+                    <span class="retry-hint">Close any app using the camera (Zoom/Teams/Meet/OBS/WhatsApp), then click retry.</span>
+                </div>
+
+                <div id="cameraHelp" class="help-box hidden">
+                    <h4>Camera is locked by another process. Try these steps, then click “Retry Camera”:</h4>
+                    <ol>
+                        <li>Close apps using the camera: Zoom/Teams/Meet, WhatsApp Desktop, OBS, camera preview tools, other browser tabs.</li>
+                        <li>Keep only one tab of this app open; refresh the page.</li>
+                        <li>If still blocked: restart the browser, reopen this page first, click “Retry Camera”.</li>
+                        <li>Check Windows: Settings → Privacy &amp; security → Camera → allow camera for Desktop apps and your browser.</li>
+                        <li>If nothing works, reboot to release the camera lock, then click “Retry Camera”.</li>
+                    </ol>
+                </div>
+
+                <!-- Attendance Info (shown after success) -->
+                <div id="attendanceInfo" class="attendance-info hidden">
+                    <h3 style="color: #f0abfc; margin-top: 0;">✓ Attendance Marked Successfully</h3>
+                    <div class="info-item">
+                        <span class="info-label">Name:</span>
+                        <span class="info-value" id="infoName">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Date & Time:</span>
+                        <span class="info-value" id="infoDateTime">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Status:</span>
+                        <span class="info-value" id="infoStatus">Present</span>
+                    </div>
+                </div>
+
+                <!-- Instructions -->
+                <div class="attendance-info">
+                    <h3 style="color: #f0abfc; margin-top: 0;">📝 Instructions</h3>
+                    <ol style="color: #c8b8ff; line-height: 1.8;">
+                        <li>Click <strong>"Start Camera"</strong> to activate your webcam</li>
+                        <li>Position your face clearly in front of the camera</li>
+                        <li>Click <strong>"Capture & Mark Attendance"</strong></li>
+                        <li>The system will recognize your face and mark attendance automatically</li>
+                        <li>If face is not registered, you'll be prompted to register first</li>
+                    </ol>
+                </div>
+            </div>
+        </main>
+
+       
+    </div>
+
+    <script>
+        let videoStream = null;
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const cameraContainer = document.getElementById('cameraContainer');
+        const startCameraBtn = document.getElementById('startCameraBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const stopCameraBtn = document.getElementById('stopCameraBtn');
+        const messageBox = document.getElementById('messageBox');
+        const attendanceInfo = document.getElementById('attendanceInfo');
+        const retryCameraBtn = document.getElementById('retryCameraBtn');
+        const cameraHelp = document.getElementById('cameraHelp');
+        const retryRow = document.getElementById('retryRow');
+
+        // Start camera with retry-friendly handling
+        async function startCamera(isRetry = false) {
+            try {
+                if (isRetry && retryCameraBtn) {
+                    retryCameraBtn.disabled = true;
+                }
+
+                // Close any existing stream before requesting a new one
+                if (videoStream) {
+                    videoStream.getTracks().forEach(track => track.stop());
+                    videoStream = null;
+                }
+
+                // Request camera with preferred constraints, then fall back to basic if needed
+                // Camera dimensions: width=1920, height=1080 (Full HD)
+                try {
+                    videoStream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            width: { ideal: 1920 },
+                            height: { ideal: 1080 },
+                            facingMode: 'user'
+                        }
+                    });
+                } catch (innerError) {
+                    console.warn('Preferred camera constraints failed, retrying with defaults:', innerError);
+                    videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                }
+                
+                video.srcObject = videoStream;
+                
+                // Show camera and controls
+                cameraContainer.classList.remove('hidden');
+                startCameraBtn.classList.add('hidden');
+                captureBtn.classList.remove('hidden');
+                stopCameraBtn.classList.remove('hidden');
+                attendanceInfo.classList.add('hidden');
+                if (cameraHelp) cameraHelp.classList.add('hidden');
+                if (retryRow) retryRow.classList.add('hidden');
+                if (retryCameraBtn) retryCameraBtn.disabled = false;
+                
+                showMessage('Camera started successfully! Position your face and click "Capture & Mark Attendance"', 'info');
+            } catch (error) {
+                console.error('Camera error:', error);
+                let errorMsg = 'Error accessing camera. Please ensure camera permissions are granted.';
+
+                if (error.name === 'NotAllowedError') {
+                    errorMsg = 'Camera permission denied. Please allow camera access in browser settings.';
+                } else if (error.name === 'NotFoundError') {
+                    errorMsg = 'No camera found. Please connect a camera device.';
+                } else if (error.name === 'NotReadableError') {
+                    errorMsg = 'Camera is in use by another application. Close other apps, then click Retry Camera below.';
+                    if (cameraHelp) cameraHelp.classList.remove('hidden');
+                }
+
+                if (retryRow) retryRow.classList.remove('hidden');
+                if (retryCameraBtn) retryCameraBtn.disabled = false;
+                showMessage(errorMsg, 'error');
+            }
+        }
+
+        // Start camera button
+        startCameraBtn.addEventListener('click', () => startCamera());
+
+        // Stop camera
+        stopCameraBtn.addEventListener('click', () => {
+            if (videoStream) {
+                videoStream.getTracks().forEach(track => track.stop());
+                videoStream = null;
+                video.srcObject = null;
+            }
+            
+            cameraContainer.classList.add('hidden');
+            startCameraBtn.classList.remove('hidden');
+            captureBtn.classList.add('hidden');
+            stopCameraBtn.classList.add('hidden');
+            if (cameraHelp) cameraHelp.classList.add('hidden');
+            if (retryRow) retryRow.classList.add('hidden');
+            
+            showMessage('Camera stopped', 'info');
+        });
+
+        // Retry camera if it was locked/busy
+        if (retryCameraBtn) {
+            retryCameraBtn.addEventListener('click', () => {
+                showMessage('Retrying camera...', 'info');
+                startCamera(true);
+            });
+        }
+
+        // Capture and mark attendance
+        captureBtn.addEventListener('click', async () => {
+            try {
+                captureBtn.disabled = true;
+                showMessage('Processing... Please wait', 'info');
+                
+                // Capture image from video
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0);
+                
+                // Convert to base64
+                const imageData = canvas.toDataURL('image/jpeg');
+                
+                // Send to server for recognition
+                const response = await fetch('/api/mark_attendance_face', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ image: imageData })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage(`✓ ${result.message}`, 'success');
+                    
+                    // Display attendance info
+                    document.getElementById('infoName').textContent = result.name || 'Unknown';
+                    document.getElementById('infoDateTime').textContent = result.timestamp || new Date().toLocaleString();
+                    document.getElementById('infoStatus').textContent = result.status || 'Present';
+                    attendanceInfo.classList.remove('hidden');
+                    
+                    // Stop camera
+                    if (videoStream) {
+                        videoStream.getTracks().forEach(track => track.stop());
+                        videoStream = null;
+                    }
+                    cameraContainer.classList.add('hidden');
+                    startCameraBtn.classList.remove('hidden');
+                    captureBtn.classList.add('hidden');
+                    stopCameraBtn.classList.add('hidden');
+                } else {
+                    showMessage(`✗ ${result.message}`, 'error');
+                }
+                
+                captureBtn.disabled = false;
+            } catch (error) {
+                console.error('Attendance error:', error);
+                showMessage('Error marking attendance. Please try again.', 'error');
+                captureBtn.disabled = false;
+            }
+        });
+
+        // Show message function
+        function showMessage(message, type) {
+            messageBox.textContent = message;
+            messageBox.className = `message-box message-${type}`;
+            messageBox.classList.remove('hidden');
+            
+            // Auto-hide info messages after 5 seconds
+            if (type === 'info') {
+                setTimeout(() => {
+                    messageBox.classList.add('hidden');
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

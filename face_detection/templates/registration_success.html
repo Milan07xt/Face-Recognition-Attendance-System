@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Success - Face Recognition</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        .success-container {
+            max-width: 700px;
+            margin: 60px auto;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.9) 0%, rgba(45, 35, 97, 0.9) 100%);
+            border-radius: 20px;
+            border: 2px solid rgba(168, 85, 247, 0.3);
+            text-align: center;
+        }
+        .success-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 1s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .success-title {
+            font-size: 2.5rem;
+            color: #10b981;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+        .success-subtitle {
+            font-size: 1.2rem;
+            color: #c8b8ff;
+            margin-bottom: 30px;
+        }
+        .user-details {
+            background: rgba(99, 102, 241, 0.1);
+            border: 2px solid rgba(168, 85, 247, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+            color: #c8b8ff;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #a78bfa;
+        }
+        .detail-value {
+            font-weight: 700;
+            color: #f0abfc;
+        }
+        .next-steps {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid #10b981;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        .next-steps h3 {
+            color: #10b981;
+            margin-top: 0;
+        }
+        .next-steps ol {
+            color: #c8b8ff;
+            line-height: 1.8;
+            margin-bottom: 0;
+        }
+        .next-steps li {
+            margin-bottom: 10px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            color: white;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(168, 85, 247, 0.3);
+        }
+        .info-box {
+            background: rgba(99, 102, 241, 0.15);
+            border-left: 4px solid #6366f1;
+            padding: 15px;
+            border-radius: 8px;
+            color: #c8b8ff;
+            margin-top: 20px;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ Face Recognition Attendance</h1>
+            <nav>
+                <ul>
+                    <li><a href="/" class="nav-link">Mark Attendance</a></li>
+                    <li><a href="/register" class="nav-link">Register Face</a></li>
+                    <li><a href="/attendance_record" class="nav-link">View Records</a></li>
+                    <li><a href="/admin_dashboard" class="nav-link">Admin Dashboard</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <div class="success-container">
+                <!-- Success Icon -->
+                <div class="success-icon">✅</div>
+
+                <!-- Success Title -->
+                <h2 class="success-title">Registration Successful!</h2>
+                <p class="success-subtitle">Your face has been registered in the system</p>
+
+                <!-- User Details -->
+                <div class="user-details">
+                    <div class="detail-row">
+                        <span class="detail-label">👤 Name:</span>
+                        <span class="detail-value" id="regName">Milan</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">📧 Email:</span>
+                        <span class="detail-value" id="regEmail">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">📅 Registered On:</span>
+                        <span class="detail-value" id="regDate">2026-01-02</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">📸 Face Status:</span>
+                        <span class="detail-value">✓ Stored & Encoded</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">🔐 Recognition Ready:</span>
+                        <span class="detail-value">✓ Active</span>
+                    </div>
+                </div>
+
+                <!-- Next Steps -->
+                <div class="next-steps">
+                    <h3>🎯 Next Steps:</h3>
+                    <ol>
+                        <li><strong>Mark Attendance</strong> - Click "Mark Attendance" to test your registered face</li>
+                        <li><strong>System Recognition</strong> - Your face will be automatically detected and recognized</li>
+                        <li><strong>Automatic Marking</strong> - Your attendance will be marked as "Present" instantly</li>
+                        <li><strong>View Records</strong> - Check your attendance history anytime</li>
+                    </ol>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <a href="/" class="btn btn-primary">📸 Mark Attendance Now</a>
+                    <a href="/admin_dashboard" class="btn btn-secondary">👥 View All Users</a>
+                </div>
+
+                <!-- Info Box -->
+                <div class="info-box">
+                    <strong>💡 Tip:</strong> Your face is now stored in the system's face recognition database. 
+                    When you visit the "Mark Attendance" page, the system will automatically recognize you and 
+                    mark your attendance without needing to enter any information manually.
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        // Display current date
+        const today = new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        document.getElementById('regDate').textContent = today;
+
+        // Get registration details from URL parameters or session
+        const urlParams = new URLSearchParams(window.location.search);
+        const name = urlParams.get('name') || 'Milan';
+        const email = urlParams.get('email') || '-';
+
+        document.getElementById('regName').textContent = name;
+        document.getElementById('regEmail').textContent = email || '-';
+    </script>
+</body>
+</html>

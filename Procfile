@@ -1,0 +1,1 @@
+web: gunicorn Face_Detection_Project.wsgi:application
